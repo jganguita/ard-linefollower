@@ -1,0 +1,190 @@
+const int sensorIzq = A1;
+const int sensorCentral = A0;    // pin that the sensor is attached to
+const int sensorDer = A2;
+
+/*RESERVAS
+const int inAizq = 7; //en reserva
+const int inAder=9; //en reserva
+*/
+
+const int PWMIzq = 5; //pwm motor izquierda   
+const int PWMDer = 6; //pwm motor derecha
+
+const int inBizq=9;  //direccion motor izquierda   
+const int inBder=10; //direccion motor derecha
+
+/*ASI ESTA ANTES DE TRASTEAR
+const int PWMIzq = 5; //pwm motor izquierda   
+const int PWMDer = 6; //pwm motor derecha
+
+const int inBizq=8;  //direccion motor izquierda   
+const int inBder=10; //direccion motor derecha*/
+
+// variables:
+int sensorValueIzq = 0;         // the sensor value
+int sensorValueCentral = 0;
+int sensorValueDer = 0;
+int sensorMin = 1023;        // minimum sensor value
+int sensorMax = 0;           // maximum sensor value
+
+int SVC, SVI, SVD;
+
+int caso=0;
+
+void setup() {
+   //config salidas
+  pinMode(inBizq, OUTPUT);
+  pinMode(inBder, OUTPUT);
+  pinMode(PWMIzq, OUTPUT);
+  pinMode(PWMDer, OUTPUT);
+        
+   
+  Serial.begin(9600);
+  
+}
+
+void loop(){
+    // read the input on analog pin 0:
+  int sensorValueCentral = analogRead(sensorCentral);
+  int sensorValueIzq  = analogRead(sensorIzq);
+  int sensorValueDer = analogRead(sensorDer);
+  
+  if(sensorValueCentral<70){
+    SVC=1;
+    //caso =1;   
+  }else{
+    SVC=0;
+    //caso = 0;
+  }
+  
+    if(sensorValueDer<70){
+    SVD=1;  
+    //caso=2; 
+  }else{
+    SVD=0;
+    //caso=0;
+  }
+  
+    if(sensorValueIzq<70){
+    SVI=1;   
+    //caso=3;
+  }else{
+    SVI=0;
+   // caso=0;
+  }
+  
+  if(SVI & SVC & SVD ==1)
+    caso=1;
+  if((SVI==1) & (SVC==1) & (SVD ==0))
+    caso=1;
+  if((SVI==1) & (SVC==0) & (SVD ==1))
+    caso=1;
+  if((SVI==0) & (SVC==1) & (SVD ==1))
+    caso=1;
+  if((SVI==0) & (SVC==1) & (SVD ==0))
+    caso=4;
+  if((SVI==0) & (SVC==0) & (SVD ==0))
+    caso=1;
+  
+  // SVI:1 SVC:0 SVD:0
+  if((SVI==1) & (SVC==0) & (SVD ==0))
+    caso=3; //Giro a la 
+  if((SVI==0) & (SVC==0) & (SVD ==1))
+    caso=2;
+
+ 
+   switch(caso)
+  { 
+    case 0: // SVI:0 SVC:0 SVD:0
+            parada(0,0);
+            break;
+    case 1: // SVI:0 SVC:1 SVD:0
+            adelante(0,0);
+            break;
+    case 2: // SVI:0 SVC:0 SVD:1
+            izquierda(0,0);
+            break;
+    case 3: // SVI:1 SVC:0 SVD:0
+            derecha(0,0);
+            break;
+    case 4: // SVI:1 SVC:1 SVD:1
+            // SVI:1 SVC:0 SVD:1
+            // SVI:0 SVC:1 SVD:1
+            // SVI:1 SVC:1 SVD:0
+            adelante_lento(0,0);
+         
+            break;
+    case 5: // SVI:0 SVC:0 SVD:0
+            parada(0,0);
+            break;
+    case 6: // SVI:0 SVC:0 SVD:0
+            atras(0,0);
+            break;
+  }
+  
+  // print out the value you read:
+  Serial.print(sensorValueIzq, DEC);
+  Serial.print(" ; ");
+  Serial.print(sensorValueCentral,DEC);
+  Serial.print(" ; ");
+  Serial.print(sensorValueDer,DEC);
+  Serial.print(" --- ");
+   Serial.print(SVI);
+  Serial.print(" ; ");
+  Serial.print(SVC);
+  Serial.print(" ; ");
+  Serial.print(SVD);
+   Serial.print(" --- ");
+   Serial.print(caso);
+  Serial.println("");
+  delay(1);        // delay in between reads for stability
+  
+}
+
+
+void parada(byte flag, byte numOfValues)
+{
+  digitalWrite( PWMIzq, HIGH);
+  digitalWrite( PWMDer, HIGH);
+  analogWrite( inBizq, 255);
+  analogWrite( inBder, 255);
+}
+
+void atras(byte flag, byte numOfValues)
+{
+  digitalWrite( PWMIzq, LOW);
+  digitalWrite( PWMDer, LOW);
+  analogWrite( inBizq, 255);
+  analogWrite( inBder, 255);
+}
+
+void derecha(byte flag, byte numOfValues)
+{
+  digitalWrite( PWMIzq, HIGH);
+  digitalWrite( PWMDer, HIGH);
+  analogWrite( inBizq, 255);
+  analogWrite( inBder, 0);
+}
+
+void izquierda(byte flag, byte numOfValues)
+{
+  digitalWrite( PWMIzq, HIGH);
+  digitalWrite( PWMDer, HIGH);
+  analogWrite( inBizq, 0);
+  analogWrite( inBder, 255);
+}
+
+void adelante(byte flag, byte numOfValues)
+{
+  digitalWrite( PWMIzq, HIGH);
+  digitalWrite( PWMDer, HIGH);
+  analogWrite( inBizq, 0);
+  analogWrite( inBder, 0);
+}
+void adelante_lento(byte flag, byte numOfValues)
+{
+  digitalWrite( PWMIzq, HIGH);
+  digitalWrite( PWMDer, HIGH);
+  analogWrite( inBizq, 75);
+  analogWrite( inBder, 75);
+}
